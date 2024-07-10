@@ -5,9 +5,9 @@ import { prisma } from "../lib/prisma";
 import { ClientError } from "../errors/client-error";
 
 
-export async function getLinks(app: FastifyInstance) {
+export async function getTripDetails(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().get(
-    '/trips/:tripId/links',
+    '/trips/:tripId',
     {
       schema: {
         params: z.object({
@@ -19,10 +19,14 @@ export async function getLinks(app: FastifyInstance) {
       const { tripId } = request.params;
 
       const trip = await prisma.trip.findUnique({
-        where: { id: tripId },
-        include: {
-          links: true
+        select: {
+          id: true,
+          destination:true,
+          starts_at:true,
+          ends_at:true,
+          is_confirmed:true
         },
+        where: { id: tripId }
       })
 
       if (!trip) {
@@ -30,6 +34,6 @@ export async function getLinks(app: FastifyInstance) {
       }
 
 
-      return { links: trip.links }
+      return { trip }
     })
 }
